@@ -1,8 +1,12 @@
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GraphicsConfiguration;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
+import javax.swing.JTextField;
 
 /**
  * Authors: Jonah Burke and Ethan Weber Date: 1/19/2019
@@ -11,15 +15,24 @@ import javax.swing.JFrame;
  */
 
 public class AlcoholSafety extends JFrame{
-
-	
+	static GraphicsConfiguration gc;
+	static JTextField weight, height;
 	public static void main(String[] args) {
-		GraphicsConfiguration gc = null;
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		int screenHeight = (int) screenSize.getHeight();
+		int screenWidth = (int) screenSize.getWidth();
 		JFrame frame = new JFrame(gc);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		frame.setTitle("Alcohol Safety");
+		frame.setSize(screenWidth/2, screenHeight/2);
+		frame.setLocation(screenWidth/4, screenHeight/4);
+		
+		
+		frame.getContentPane().setLayout(new FlowLayout());
+		
+		frame.pack();
 		frame.setVisible(true);
-
-		
-		
 		
 		
 		Scanner scan = new Scanner(System.in);
