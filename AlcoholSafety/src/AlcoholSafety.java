@@ -1,3 +1,10 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -20,6 +27,10 @@ import javafx.stage.Stage;
  */
 
 public class AlcoholSafety extends Application{
+	
+	/**
+	 * These Methods are for the javafx framework
+	 */
 	
 	@Override
     public void init() {
@@ -46,8 +57,7 @@ public class AlcoholSafety extends Application{
         search.setFont(labelFont);
         Button execSearch = new Button("Search");
         ListView<String> alcoholList = new ListView<>();
-        ObservableList<String> items = FXCollections.observableArrayList ("Single", "Double", "Suite", "Family App");
-        alcoholList.setItems(items);
+        ObservableList<String> items = FXCollections.observableArrayList();
         
         info.setTranslateY(0);
         info.setTranslateX(0);
@@ -72,13 +82,17 @@ public class AlcoholSafety extends Application{
         // Handle click on "Search" button
         execSearch.setOnAction((ActionEvent) -> {
         	System.out.println("Lets boogie");
-            root.getChildren().add(alcoholList);
+        	items.addAll(getAlcoholList(searchbar.getText()));
+            if (!root.getChildren().contains(alcoholList)) {
+            	root.getChildren().add(alcoholList);
+            }
+            searchbar.clear();
         });
         // Handle the list of possible drinks
         alcoholList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                
+            	System.out.println("We boogied");
             }
         });
         
@@ -107,44 +121,61 @@ public class AlcoholSafety extends Application{
 	
 	public static void main(String[] args) {
 		launch(args);
-		
-		/*
-		Scanner scan = new Scanner(System.in);
-		String input = null;
-		boolean decided = true;
-		do {
-			System.out.println("Options:\n"
-					+ "Update Profile\n"
-					+ "Update Drinks Consumed");
-			input = scan.nextLine();
-			if (input.equalsIgnoreCase("Update Profile")) {
-				decided = false;
-
-			} else if (input.equalsIgnoreCase("Update Drinks Consumed")) {
-				decided = false;
-
-			} else {
-				System.out.println("Not a recognized input. Try again.");
-			}
-		} while (decided);
-
-		if (input.equalsIgnoreCase("Update Profile")) {
-			
-		} else { // Update Drinks Consumed
-			System.out.println("Enter Drink Name");
-			input = scan.nextLine();
-			if ( Drink is not found in database  ) {
-				// TODO: Prompt user for drink type (whisky, rum, etc.) and/or other necessary info
-			}
-
-			System.out.println("Amount:");
-			//Probably have to store this in a double or int variable or somethign
-			input = scan.nextLine();
-
-			// TODO: Calculate the amount of alcohol/standard drinks consumed so far and how much more cna be handled
+	}
+	
+	/**
+	 * Methods for the backend go here
+	 */
+	
+	public static ObservableList<String> getAlcoholList(String drinkName) {
+		ObservableList<String> alcoholList = FXCollections.observableArrayList();
+		File file = new File("alcoholList.csv");
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(file));
+		} catch(FileNotFoundException FNFE) {
+			System.out.println("Invalid file path");
+			System.exit(1);
 		}
-		*/
-
+		
+		String line = new String();
+		try {
+			line = br.readLine();
+		} catch (IOException IOE) {
+			System.out.println("IOException trying to read first line of file");
+		}
+		//HashMap<Integer, String> results = new HashMap<Integer, String>();
+		
+		while(line != null) {
+			String tokens[] = line.split(",");
+			if((tokens[0].toLowerCase()).contains(drinkName)) {
+				int ml = 0;
+				double abv = 0;
+				try {
+					ml = Integer.parseInt(tokens[1]);
+					abv = Double.parseDouble(tokens[2])/2;//proof/2 = abv
+				} catch(NumberFormatException NFE) {
+					System.out.println("It's possible there's an issue in our list,"
+							+ " but it shouldn't affect the rest of the program.");
+					NFE.printStackTrace();
+				}
+				
+				// These would be useful later
+				double oz = ml/29.5735;
+				double alcoholAmt = ml*abv/100;//total amt in bottle
+				double mass = alcoholAmt*.78924; //amt in bottle in grams
+				double stdDrinks = mass/14;
+				double gramsPerShot = mass/stdDrinks;
+				alcoholList.add(String.format("%s %s ML, %s proof", tokens[0], tokens[1], tokens[2]));
+			}
+			try {
+				line = br.readLine();
+			} catch (IOException e) {
+				throw new RuntimeException();
+			}
+		}
+		
+		return alcoholList;
 	}
 
 }
